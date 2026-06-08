@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Jazdecká aplikácia</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    body{
+      font-family: Arial;
+      background:#121212;
+      color:white;
+      padding:20px;
+    }
+
+    .calendar{
+      display:grid;
+      grid-template-columns:repeat(7,1fr);
+      gap:6px;
+      margin-top:10px;
+    }
+
+    .day{
+      background:#1e1e1e;
+      padding:6px;
+      min-height:70px;
+      border-radius:8px;
+      cursor:pointer;
+    }
+
+    .training{
+      font-size:11px;
+      background:#2e7d32;
+      margin-top:3px;
+      padding:2px;
+      border-radius:4px;
+    }
+
+    .modal{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.7);
+      display:flex;
+      justify-content:center;
+      align-items:center;
+    }
+
+    .hidden{display:none;}
+
+    .modal-content{
+      background:#222;
+      padding:15px;
+      border-radius:10px;
+      width:320px;
+    }
+
+    input,select,textarea{
+      width:100%;
+      margin:5px 0;
+      padding:6px;
+    }
+
+    button{
+      margin-top:5px;
+      width:100%;
+      padding:6px;
+    }
+
+    body {
+  font-family: Arial;
+  background:#121212;
+  color:white;
+  margin:0;
+  padding:20px;
+}
+
+.container {
+  max-width:900px;
+  margin:auto;
+}
+
+.calendar {
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:8px;
+}
+
+.day {
+  background:#1e1e1e;
+  min-height:80px;
+  padding:5px;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+.day:hover {
+  outline:2px solid #2e7d32;
+}
+
+.training {
+  font-size:12px;
+  margin-top:5px;
+  background:#2e7d32;
+  padding:3px;
+  border-radius:5px;
+}
+
+.stats {
+  margin-top:20px;
+}
+
+.modal {
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.hidden { display:none; }
+
+.modal-content {
+  background:#1e1e1e;
+  padding:20px;
+  border-radius:10px;
+  width:90%;
+  max-width:400px;
+}
+
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+  width:100%;
+  margin-top:5px;
+  margin-bottom:10px;
+  padding:8px;
+}
+
+.race-bar{
+  background:#c62828;
+  color:white;
+  font-size:10px;
+  padding:2px 4px;
+  border-radius:4px;
+  margin-top:2px;
+}
+
+.race-start{ border-left:3px solid yellow; }
+.race-mid{ opacity:0.9; }
+.race-end{ border-right:3px solid yellow; }
+  </style>
+</head>
+
+<body>
+
+<h1>🐴 Jazdecká aplikácia</h1>
+
+<label>🐴 Kôň:
+  <select id="horseFilter">
+    <option value="">všetky kone</option>
+  </select>
+</label>
+
+<button id="pdfMonthHorse">📄 Export koňa (mesiac)</button>
+
+<div>
+  <p>Tréningové aktivity: <span id="workCount">0</span></p>
+  <p>Preteky dni: <span id="raceDaysCount">0</span></p>
+</div>
+
+<div style="margin-top:10px;">
+  <button id="prev">←</button>
+  <span id="month"></span>
+  <button id="next">→</button>
+</div>
+
+<div class="calendar" id="calendar"></div>
+
+<div class="modal hidden" id="modal">
+
+  <div class="modal-content">
+
+    <select id="type">
+      <option>Trening</option>
+      <option>Jazdenie</option>
+      <option>Lonž</option>
+      <option>Preteky</option>
+    </select>
+
+    <input id="rider" placeholder="Klient"/>
+    <input id="horse" placeholder="Kôň"/>
+
+    <div id="raceBox" class="hidden">
+      <input id="raceName" placeholder="Názov pretekov"/>
+      <input type="date" id="from"/>
+      <input type="date" id="to"/>
+    </div>
+
+    <textarea id="note"></textarea>
+
+    <button id="save">Uložiť</button>
+    <button id="delete">Zmazať</button>
+    <button id="close">Zavrieť</button>
+
+  </div>
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>

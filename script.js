@@ -300,7 +300,7 @@ let robotoFont = null;
 
 /* LOAD FONT (Roboto Base64) */
 async function loadFont(){
-  const url = "https://raw.githubusercontent.com/google/fonts/main/apache/roboto/Roboto-Regular.ttf";
+  const url = "./Noto_Sans/static/NotoSans-Regular.ttf";
 
   const res = await fetch(url);
   const buffer = await res.arrayBuffer();

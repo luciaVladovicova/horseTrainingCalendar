@@ -1,7 +1,7 @@
 "use strict";
 // Cache names are scoped to this installation, including on shared GitHub Pages origins.
 const PREFIX="jazdecky-kalendar-"+self.registration.scope+"-";
-const CACHE=PREFIX+"v9";
+const CACHE=PREFIX+"v10";
 const FILES=["./","./index.html","./script.js","./vendor/jspdf.umd.min.js","./manifest.json","./icon-192.png","./icon-512.png"];
 self.addEventListener("install",event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES)).then(()=>self.skipWaiting()));

@@ -20,7 +20,7 @@ function matchesFilters(e){return norm(e.horse).includes(norm(horseFilter.value)
 function render(){calendar.replaceChildren();const y=date.getFullYear(),m=date.getMonth(),last=new Date(y,m+1,0),start=(new Date(y,m,1).getDay()+6)%7;monthEl.textContent=`${months[m]} ${y}`;for(let i=0;i<start;i++)calendar.append(document.createElement("div"));for(let d=1;d<=last.getDate();d++){const key=dateKey(y,m,d),current=parseDate(key),cell=document.createElement("div");cell.className="day";cell.addEventListener("click",()=>openNew(key));const number=document.createElement("b");number.textContent=d;cell.append(number);events.filter(e=>matchesFilters(e)&&(e.type==="Preteky"?(parseDate(e.from)<=current&&parseDate(e.to)>=current):e.date===key)).forEach(e=>{const item=document.createElement("div");item.addEventListener("click",ev=>openEdit(ev,e.id));if(e.type==="Preteky"){item.className="race-bar "+(current.getTime()===parseDate(e.from)?.getTime()?"race-start":current.getTime()===parseDate(e.to)?.getTime()?"race-end":"race-mid");item.textContent=e.raceName||"Preteky"}else{item.className="training";item.textContent=`${e.horse||"?"} – ${e.type}`}cell.append(item)});calendar.append(cell)}updateStats();loadHorses();loadExportHorses();$("exportPeriod").textContent=`Obdobie exportu: ${months[m]} ${y}. Mesiac zmeníš šípkami nad kalendárom.`}
 function openNew(key){selectedDate=key;editId=null;[rider,horse,note,raceName,from,to].forEach(el=>el.value="");type.value="Tréning";raceBox.classList.add("hidden");$("delete").style.display="none";$("modal").classList.remove("hidden")}
 function openEdit(ev,id){ev.stopPropagation();const e=events.find(x=>x.id===id);if(!e)return;editId=id;selectedDate=e.date;type.value=e.type;rider.value=e.rider;horse.value=e.horse;note.value=e.note;if(e.type==="Preteky"){raceBox.classList.remove("hidden");raceName.value=e.raceName;from.value=e.from;to.value=e.to}else raceBox.classList.add("hidden");$("delete").style.display="block";$("modal").classList.remove("hidden")}
-function updateStats(){const start=new Date(date.getFullYear(),date.getMonth(),1),end=new Date(date.getFullYear(),date.getMonth()+1,0),filtered=events.filter(e=>matchesFilters(e)&&(e.type==="Preteky"?(parseDate(e.to)>=start&&parseDate(e.from)<=end):(parseDate(e.date)>=start&&parseDate(e.date)<=end)));workCount.textContent=filtered.filter(e=>["Tréning","Jazdenie","Lonž"].includes(e.type)).length;raceDaysCount.textContent=filtered.filter(e=>e.type==="Preteky").reduce((sum,e)=>{const a=new Date(Math.max(parseDate(e.from),start)),b=new Date(Math.min(parseDate(e.to),end));return sum+Math.floor((b-a)/86400000)+1},0)}
+function updateStats(){const start=new Date(date.getFullYear(),date.getMonth(),1),end=new Date(date.getFullYear(),date.getMonth()+1,0),filtered=events.filter(e=>matchesFilters(e)&&(e.type==="Preteky"?(parseDate(e.to)>=start&&parseDate(e.from)<=end):(parseDate(e.date)>=start&&parseDate(e.date)<=end)));workCount.textContent=filtered.filter(e=>["Tréning","Jazdenie","Lonž","Vychádzka"].includes(e.type)).length;raceDaysCount.textContent=filtered.filter(e=>e.type==="Preteky").reduce((sum,e)=>{const a=new Date(Math.max(parseDate(e.from),start)),b=new Date(Math.min(parseDate(e.to),end));return sum+Math.floor((b-a)/86400000)+1},0)}
 
 $("save").onclick=()=>{const isRace=type.value==="Preteky";if(!horse.value.trim())return alert("Zadaj meno koňa.");if(isRace&&(!from.value||!to.value||from.value>to.value))return alert("Skontroluj dátumy pretekov.");const e={id:editId||uuid(),type:type.value,rider:rider.value.trim(),horse:horse.value.trim(),note:note.value.trim(),date:isRace?null:selectedDate,raceName:isRace?raceName.value.trim():"",from:isRace?from.value:null,to:isRace?to.value:null};const i=events.findIndex(x=>x.id===editId);if(i>=0)events[i]=e;else events.push(e);save();$("modal").classList.add("hidden");editId=null;render()};
 $("delete").onclick=()=>{if(!editId)return;events=events.filter(e=>e.id!==editId);save();$("modal").classList.add("hidden");editId=null;render()};
@@ -92,10 +92,10 @@ $("pdfMonthHorse").onclick=async()=>{
     function tableHeader(){
       doc.setFillColor(35,91,62);doc.rect(left,pos,width,10,"F");
       doc.setTextColor(255,255,255);doc.setFontSize(10);
-      doc.text("Dátum / obdobie",left+4,pos+7);doc.text("Aktivita",left+64,pos+7);pos+=10;
+      doc.text("Dátum / obdobie",left+4,pos+7);doc.text("Aktivita",left+64,pos+7);doc.text("Poznámka",left+108,pos+7);pos+=10;
     }
     pageHeader();
-    const work=filtered.filter(e=>["Tréning","Jazdenie","Lonž"].includes(e.type)).length;
+    const work=filtered.filter(e=>["Tréning","Jazdenie","Lonž","Vychádzka"].includes(e.type)).length;
     const races=filtered.filter(e=>e.type==="Preteky").length;
     doc.setFillColor(239,245,241);doc.roundedRect(left,pos,width,16,2,2,"F");
     doc.setTextColor(35,91,62);doc.setFontSize(10);
@@ -108,8 +108,8 @@ $("pdfMonthHorse").onclick=async()=>{
       const dates=event.type==="Preteky"?`${pdfDate(event.from)} – ${pdfDate(event.to)}`:pdfDate(event.date);
       const activity=event.type==="Preteky"?`Preteky${event.raceName?" – "+event.raceName:""}`:event.type;
       doc.setFontSize(10);
-      const dateLines=doc.splitTextToSize(dates,52),activityLines=doc.splitTextToSize(activity,106);
-      const count=Math.max(dateLines.length,activityLines.length);
+      const dateLines=doc.splitTextToSize(dates,52),activityLines=doc.splitTextToSize(activity,36),noteLines=doc.splitTextToSize(event.note||"",62);
+      const count=Math.max(dateLines.length,activityLines.length,noteLines.length);
       let offset=0;
       while(offset<count){
         if(pos+14>bottom){doc.addPage();pageHeader();tableHeader()}
@@ -117,10 +117,12 @@ $("pdfMonthHorse").onclick=async()=>{
         const take=Math.min(count-offset,available),height=take*lineHeight+8;
         doc.setFillColor(...(index%2?[255,255,255]:[246,248,246]));doc.rect(left,pos,width,height,"F");
         doc.setFontSize(10);doc.setTextColor(65,74,68);
-        const datePart=dateLines.slice(offset,offset+take),activityPart=activityLines.slice(offset,offset+take);
+        const datePart=dateLines.slice(offset,offset+take),activityPart=activityLines.slice(offset,offset+take),notePart=noteLines.slice(offset,offset+take);
         datePart.forEach((line,i)=>doc.text(line,left+4,pos+7+i*lineHeight));
         doc.setTextColor(...(event.type==="Preteky"?[155,48,43]:[35,91,62]));
         activityPart.forEach((line,i)=>doc.text(line,left+64,pos+7+i*lineHeight));
+        doc.setTextColor(65,74,68);
+        notePart.forEach((line,i)=>doc.text(line,left+108,pos+7+i*lineHeight));
         pos+=height;offset+=take;
       }
     });
